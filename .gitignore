@@ -1,0 +1,4 @@
+# Ordner, die ignoriert werden sollen, weil sie Daten enthalten
+train/
+test/
+valid/

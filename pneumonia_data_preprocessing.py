@@ -109,7 +109,7 @@ def preprocess_and_save_data(path, dataname):
 
 
 def main():
-    #load_data()
+    load_data() #run only once, after that delete or set comment
     path = "/home/lisa/PycharmProjects/FM_Project"  # path to folder, where data gets saved, please change
 
     preprocess_and_save_data(path, "test") # test data
