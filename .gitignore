@@ -6,3 +6,5 @@ data/
 .venv/*
 config.py
 .vscode/launch.json
+.venv/**
+config.py
