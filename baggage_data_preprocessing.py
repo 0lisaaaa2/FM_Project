@@ -8,14 +8,11 @@ import io
 """
 Gets the JPEG version of an image in greyscale
 input: img_path (path of the image)
-output: bytes of the JPEG image
+output: a NumPy Array of the image
 """
 def pil_to_jpeg_bytes(img_path):
     img = Image.open(img_path).convert("L")
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=95)
-    buf.seek(0)
-    return buf.getvalue()
+    return np.array(img, dtype=np.uint8)
 
 
 """

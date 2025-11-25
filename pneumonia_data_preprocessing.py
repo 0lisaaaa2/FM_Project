@@ -35,12 +35,12 @@ def data_to_df(dataname):
 """
 Decode image and convert it to greyscale
 input: image_bytes_dict (A dictionary automatically created when to_pandas() is used for HuggingFace-DataFrame)
-output: image (A PIL Image object)
+output: a NumPy Array of the image
 """
 def decode_and_to_greyscale(image_bytes_dict):
     img_bytes = image_bytes_dict["bytes"] #bytes is the default name created by to_pandas()
-    img = Image.open(io.BytesIO(img_bytes))
-    return img.convert("L")
+    img = Image.open(io.BytesIO(img_bytes)).convert("L")
+    return np.array(img, dtype=np.uint8)
 
 
 """
