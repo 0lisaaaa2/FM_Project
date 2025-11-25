@@ -3,3 +3,5 @@ train/
 test/
 valid/
 data/
+.venv/*
+config.py
