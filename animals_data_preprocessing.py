@@ -106,7 +106,9 @@ returns images as greyscale array
 """
 def load_and_convert_image(path):
     img = Image.open(path).convert("L")
-    return np.array(img, dtype=np.uint8)
+    temp = np.array(img, dtype=np.uint8) 
+    #print(temp.dtype)
+    return temp
 
 """
 Save metadata.parquet and pictures.npz
@@ -131,6 +133,8 @@ def save_split(df, output_dir, split_name):
     for _, row in df.iterrows():
         img_array = load_and_convert_image(row.file_path) # convert into greyscale
         img_dict[row.img_id] = img_array # img_id : image_array
+    
+    print(split_name, img_dict)
 
     # save pictures.npz
     pictures_path = os.path.join(split_dir, "pictures.npz")
