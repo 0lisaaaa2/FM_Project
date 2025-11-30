@@ -4,6 +4,7 @@ test/
 valid/
 data/
 .venv/*
+venv/
 config.py
 .vscode/launch.json
 .venv/**
