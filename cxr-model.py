@@ -11,8 +11,8 @@ import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 
-logging.info("GPUs:", tf.config.list_physical_devices('GPU'))
-logging.info("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
+logging.info("GPUs: %s", tf.config.list_physical_devices('GPU'))
+logging.info("Num GPUs Available: %s", len(tf.config.list_physical_devices('GPU')))
 
 if 'elixrc_model' not in locals():
     elixrc_model = tf.saved_model.load(os.path.join(models_dir,'elixr-c-v2-pooled'))
