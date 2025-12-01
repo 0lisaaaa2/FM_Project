@@ -1,11 +1,18 @@
-from config import models_dir, dataset_dir
+import argparse
+import logging
+import time
+from config import models_dir
 import os
-import pandas as pd
 import io
 import png
 import tensorflow as tf
 import tensorflow_text
 import numpy as np
+
+logging.basicConfig(level=logging.INFO)
+
+logging.info("GPUs:", tf.config.list_physical_devices('GPU'))
+logging.info("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
 
 if 'elixrc_model' not in locals():
     elixrc_model = tf.saved_model.load(os.path.join(models_dir,'elixr-c-v2-pooled'))
@@ -66,16 +73,20 @@ def array_to_tfexample(image_array: np.ndarray) -> tf.train.Example:
     return example
 
 
-def calculate_embeddings(dataset_dir):
+def calculate_embeddings(data, test=False):
     embeddings_dict = {}
-    data = load_dataset(os.path.join(dataset_dir,'pictures.npz'))
+    i = 0
     for key, value in data.items():
-        print(f'Processing {key}...')
+        
+        logging.debug(f'Processing {key}...')
         serialized_image = array_to_tfexample(value).SerializeToString()
-        embeddings_dict = process_image(serialized_image)
-        embeddings_dict[key] = embeddings_dict
-        print(f'Embeddings shape for {key}: {embeddings_dict[0].shape}')
-    np.savez_compressed(os.path.join(dataset_dir, 'embeddings.npz'), **embeddings_dict)
+        embeddings = process_image(serialized_image)
+        embeddings_dict[key] = embeddings
+        logging.debug(f'Embeddings shape for {key}: {embeddings[0].shape}')
+        i += 1
+        if test and i >= 2:
+            break
+    return embeddings_dict
     
 def process_image(serialized_image):
 
@@ -96,5 +107,19 @@ def process_image(serialized_image):
 
 
 if __name__ == "__main__":
-    dataset_path = os.path.join(dataset_dir, 'braintumor/test/')
-    calculate_embeddings(dataset_path)
+    parser = argparse.ArgumentParser(description="Calculate embeddings for dataset splits.")
+    parser.add_argument('--datasetdir', type=str, required=True, help='Path to the dataset directory')
+    parser.add_argument('--test', action='store_true', help='If set, only test code with 2 datasets')
+    args = parser.parse_args()
+    
+
+    for split in ['test', 'valid', 'train']:
+        split_path = os.path.join(args.datasetdir, f'{split}/')
+        logging.info(f"Processing split: {split_path}")
+        data = load_dataset(os.path.join(split_path,'pictures.npz'))
+        start_time = time.time()
+        embeddings = calculate_embeddings(data, args.test)
+
+        np.savez_compressed(os.path.join(split_path, 'embeddings.npz'), **embeddings)
+        elapsed = time.time() - start_time
+        logging.info(f"Processing time for {split}: {elapsed:.2f} seconds")

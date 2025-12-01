@@ -6,6 +6,29 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
+        },
+                {
+            "name": "Run cxr-model.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/cxr-model.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--datasetdir",
+                "/mnt/i/Meine Ablage/datasets/braintumor"
+            ]
+        },
+        {
+            "name": "Run cxr-model.py (test mode)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/cxr-model.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--datasetdir",
+                "/mnt/i/Meine Ablage/datasets/braintumor",
+                "--test"
+            ]
         }
     ]
 }
