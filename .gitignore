@@ -6,3 +6,5 @@ data/
 .venv/*
 venv/
 config.py
+.vscode/
+secret.txt
