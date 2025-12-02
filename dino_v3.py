@@ -2,25 +2,21 @@ import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
-from torchvision import transforms as T
+from transformers import AutoImageProcessor, AutoModel
+from huggingface_hub import login
 
-# load DINOv2
-model = torch.hub.load("facebookresearch/dinov2", "dinov2_vits14")
-model.eval()
+login()
 
-# image transfromation to fit dinos expected RGB input
-transform = T.Compose([
-    T.Grayscale(num_output_channels=3),  # dino expects RGB -> need 3 channels
-    T.ToTensor(), # convert to floattensor + normalize to [0,1]
-    T.Resize(244), # resize image (dino expect 224 x 224)
-    T.CenterCrop(224), 
-    T.Normalize([0.5], [0.5]) # convert to [-1, 1]
-    ])
+# load dinov3 from huggingface
+model_name = "facebook/dinov3-vits16-pretrain-lvd1689m"
+processor = AutoImageProcessor.from_pretrained(model_name)
+model = AutoModel.from_pretrained(model_name)
 
-# convert np.array using steps from above ()
+# convert np.array to tensor
 def preprocess_array(arr):
     img = Image.fromarray(arr.astype(np.uint8), mode="L")
-    return transform(img).unsqueeze(0)
+    inputs = processor(images=img, return_tensors="pt")  # handles preprocessing of input: resizing, normalization, convert to tensor -> generates dictrionary
+    return inputs
 
 # load data
 pictures_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\animals\test\pictures.npz"          
@@ -28,7 +24,6 @@ metadata_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\animals\test\met
 
 data = np.load(pictures_path)
 metadata = pd.read_parquet(metadata_path)
-
 
 # generate embeddings
 embeddings = {}
@@ -39,11 +34,16 @@ model.to(device)
 for idx, row in metadata.head(3).iterrows(): # only use first 3 images for now
     img_id = row["img_id"]
     arr = data[img_id]
-    x = preprocess_array(arr).to(device)
 
-    with torch.no_grad():
-        emb = model(x)  
+    inputs = preprocess_array(arr).to(device)
+
+    with torch.inference_mode():
+        outputs = model(**inputs)  
+
+    emb = outputs.pooler_output
+
     embeddings[img_id] = emb.cpu().numpy()  # als np.array speichern
+    
     print(f"Shape Embedding for {img_id}: {embeddings[img_id].shape}") #(1, 384)
     print(f"Embedding for {img_id}: {embeddings[img_id]}")
 

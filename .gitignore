@@ -11,3 +11,5 @@ config.py
 config.py
 .venv/**
 config.py
+.vscode/
+secret.txt
