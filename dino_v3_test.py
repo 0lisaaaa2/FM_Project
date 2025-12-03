@@ -20,11 +20,11 @@ def preprocess_array(arr):
     return inputs
 
 # load data
-pictures_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\animals\test\pictures.npz"          
-metadata_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\animals\test\metadata.parquet"      
+pictures_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\preprocessed_datasets\animals\test\pictures.npz"          
+metadata_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\preprocessed_datasets\animals\test\metadata.parquet"      
 
 data = np.load(pictures_path)
-metadata = pd.read_parquet(metadata_path)
+#metadata = pd.read_parquet(metadata_path)
 
 # generate embeddings
 embeddings = {}
@@ -32,8 +32,7 @@ embeddings = {}
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-for idx, row in metadata.head(3).iterrows(): # only use first 3 images for now
-    img_id = row["img_id"]
+for img_id in list(data.keys())[:3]: # only first 3 images for now
     arr = data[img_id]
 
     inputs = preprocess_array(arr).to(device)
