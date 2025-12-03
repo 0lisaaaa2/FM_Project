@@ -3,15 +3,16 @@ import pandas as pd
 import torch
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModel
+from huggingface_hub import login
 
-# need access to model in hf via token: huggingface-cli login
+#login()
 
 # load dinov3 from huggingface
-# otherwise, give local path to model as parameter
-# local_model_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\dinov3"
-model_name = "facebook/dinov3-vits16-pretrain-lvd1689m"
-processor = AutoImageProcessor.from_pretrained(model_name)
-model = AutoModel.from_pretrained(model_name)
+#model_name = "facebook/dinov3-vits16-pretrain-lvd1689m"
+local_model_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\dinov3"
+
+processor = AutoImageProcessor.from_pretrained(local_model_path)
+model = AutoModel.from_pretrained(local_model_path)
 
 # convert np.array to tensor
 def preprocess_array(arr):
@@ -20,8 +21,8 @@ def preprocess_array(arr):
     return inputs
 
 # load data
-pictures_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\animals\test\pictures.npz"          
-metadata_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\animals\test\metadata.parquet"      
+pictures_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\preprocessed_datasets\animals\test\pictures.npz"          
+metadata_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\preprocessed_datasets\animals\test\metadata.parquet"      
 
 data = np.load(pictures_path)
 metadata = pd.read_parquet(metadata_path)
