@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 data_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\preprocessed_datasets" #\datasetname\(test/train/valid)\pictures.npz
 # path to dinov3 (uploaded to drive as well)
 model_path = r"D:\lisa-\Universität_2\Master\2. Semester\FM\dinov3"
-# if not locally, instead load:
+# if not locally, instead load: (need access via token)
 # model_path = "facebook/dinov3-vits16-pretrain-lvd1689m"
 
 # load model 
