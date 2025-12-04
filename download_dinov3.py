@@ -10,6 +10,7 @@ def download_model(local_dir):
         local_dir=local_dir
     )
 
+# change model_dir
 if __name__ == "__main__":
     model_dir = r"D:\lisa-\Universität_2\Master\2. Semester\FM\dinov3"
     download_model(model_dir)
