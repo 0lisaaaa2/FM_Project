@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 model_dir = os.path.join(models_dir, 'dinov3')
 # load model 
-processor = AutoImageProcessor.from_pretrained(models_dir)
+processor = AutoImageProcessor.from_pretrained(model_dir)
 model = AutoModel.from_pretrained(model_dir)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
@@ -71,4 +71,4 @@ if __name__ == "__main__":
         data = load_data(img_path)
         embeddings = generate_embeddings(data, args.test)
         #print(embeddings)
-        np.savez_compressed(os.path.join(args.datasetdir, split, "embeddings.npz"), **embeddings)
+        np.savez_compressed(os.path.join(args.datasetdir, split, "dinov3_embeddings.npz"), **embeddings)
