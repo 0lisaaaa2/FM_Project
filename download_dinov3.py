@@ -1,8 +1,9 @@
 import os
 from huggingface_hub import snapshot_download
+from config import models_dir
 
 def download_model(local_dir):
-
+    
     os.makedirs(local_dir, exist_ok=True)
 
     snapshot_download(
@@ -12,6 +13,6 @@ def download_model(local_dir):
 
 # change model_dir
 if __name__ == "__main__":
-    model_dir = r"D:\lisa-\Universität_2\Master\2. Semester\FM\dinov3"
+    model_dir = os.path.join(models_dir, 'dinov3')
     download_model(model_dir)
     print("Download completed")
