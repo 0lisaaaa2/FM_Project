@@ -1,2 +1,6 @@
 tensorflow-text==2.18.0
 tensorflow==2.18.0
+torch== 2.6.0
+pillow==11.1.0
+torchmetrics==1.6.1
+torchvision==0.21.0
