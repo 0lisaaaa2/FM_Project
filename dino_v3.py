@@ -4,17 +4,9 @@ import os
 import torch
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModel
-from config import dataset_dir, models_dir
 import logging
 
 logging.basicConfig(level=logging.INFO)
-
-model_dir = os.path.join(models_dir, 'dinov3')
-# load model 
-processor = AutoImageProcessor.from_pretrained(model_dir)
-model = AutoModel.from_pretrained(model_dir)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
 
 
 # load data 
@@ -60,9 +52,17 @@ def generate_embeddings(data, test=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calculate embeddings for dataset splits.")
     parser.add_argument('--datasetdir', type=str, required=True, help='Path to the dataset directory')
+    parser.add_argument('--modeldir', type=str, required=True, help='Path to the model directory')
     parser.add_argument('--test', action='store_true', help='If set, only test code with 2 datasets')
     args = parser.parse_args()
-        
+
+    global model, processor, device    
+    # load model 
+    processor = AutoImageProcessor.from_pretrained(args.modeldir)
+    model = AutoModel.from_pretrained(args.modeldir)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    
     for split in os.listdir(args.datasetdir):
         logging.info(f"Current data split being processed: {split}")
         # print("Current data split being processed:", split)
