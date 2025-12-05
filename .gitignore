@@ -13,3 +13,4 @@ config.py
 config.py
 .vscode/
 secret.txt
+__pycache__/**
