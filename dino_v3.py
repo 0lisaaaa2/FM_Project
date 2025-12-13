@@ -8,7 +8,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-
+TEST_IMAGES_NUM = 42
 # load data 
 # path = path to pictures.npz
 def load_data(path):
@@ -26,28 +26,33 @@ def preprocess_data(arr):
 
 # generates the embedding using dinov3
 # data = images arrays loaded from pictures.npz 
-def generate_embeddings(data, test=False):
+def generate_embeddings(data, test=False, batch_size=16):
     embeddings = {}
-    i = 0
-    for img_id in list(data.keys()):  #[:1]: # only first image in split for testing
-        arr = data[img_id]
+    img_ids = list(data.keys())
+    num_images = len(img_ids)
+    if test:
+        img_ids = img_ids[:TEST_IMAGES_NUM]
+        num_images = TEST_IMAGES_NUM
 
-        inputs = preprocess_data(arr).to(device)
+    num_batches = (num_images + batch_size - 1) // batch_size
+    logging.info(f"Processing {num_images} images in {num_batches} batches (batch size: {batch_size})")
 
+    for batch_idx in range(num_batches):
+        batch_start = batch_idx * batch_size
+        batch_img_ids = img_ids[batch_start:batch_start + batch_size]
+        batch_imgs = [
+            Image.fromarray(data[img_id].astype(np.uint8), mode="L") for img_id in batch_img_ids
+        ]
+        inputs = processor(images=batch_imgs, return_tensors="pt").to(device)
+        logging.info(f"Batch {batch_idx+1}/{num_batches}")
+        logging.debug("Actual Batch size: %s, img_format %s, %s, %s", *inputs.pixel_values.shape)
         with torch.inference_mode():
-            outputs = model(**inputs)  
-
-        emb = outputs.pooler_output
-
-        embeddings[img_id] = emb.cpu().numpy()  # als np.array speichern
-        i += 1
-        if test and i >= 2:
-            break
-        #print(f"Shape Embedding for {img_id}: {embeddings[img_id].shape}") #(1, 384)
-        #print(f"Embedding for {img_id}: {embeddings[img_id]}")
-    
+            outputs = model(**inputs)
+        batch_embs = outputs.pooler_output
+        logging.debug("Output size: %s", batch_embs.shape)
+        for idx, img_id in enumerate(batch_img_ids):
+            embeddings[img_id] = batch_embs[idx].cpu().numpy()
     return embeddings
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calculate embeddings for dataset splits.")
@@ -55,7 +60,10 @@ if __name__ == "__main__":
     parser.add_argument('--modeldir', type=str, required=True, help='Path to the model directory')
     parser.add_argument('--test', action='store_true', help='If set, only test code with 2 datasets')
     args = parser.parse_args()
-
+    
+    logging.info(f"CUDA available: {torch.cuda.is_available()}")
+    logging.info(f"Number of GPUs: {torch.cuda.device_count()}")
+    
     global model, processor, device    
     # load model 
     processor = AutoImageProcessor.from_pretrained(args.modeldir)
