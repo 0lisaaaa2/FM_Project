@@ -3,3 +3,6 @@ train/
 test/
 valid/
 data/
+venv/
+.vscode/
+secret.txt
