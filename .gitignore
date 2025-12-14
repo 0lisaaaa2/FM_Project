@@ -2,6 +2,7 @@
 train/
 test/
 valid/
+val/
 data/
 .venv/*
 config.py
