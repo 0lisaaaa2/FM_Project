@@ -13,5 +13,5 @@ source /home/st/st_us-053000/st_st193195/.venv/bin/activate
 cd /home/st/st_us-053000/st_st193195/FM_Project/
 
 # Run the script
-python dino_v3.py --datasetdir /home/st/st_us-053000/st_st193195/datasets/animals/ --test
+python dino_v3.py --datasetdir /home/st/st_us-053000/st_st193195/datasets/animals/ --modeldir /home/st/st_us-053000/st_st193195/elixr_models/dinov3_7b --test
 
