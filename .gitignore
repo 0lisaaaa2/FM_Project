@@ -11,3 +11,5 @@ config.py
 .vscode/
 secret.txt
 __pycache__/**
+*.err
+*.out

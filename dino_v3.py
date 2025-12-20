@@ -59,6 +59,7 @@ if __name__ == "__main__":
     parser.add_argument('--datasetdir', type=str, required=True, help='Path to the dataset directory')
     parser.add_argument('--modeldir', type=str, required=True, help='Path to the model directory')
     parser.add_argument('--test', action='store_true', help='If set, only test code with 2 datasets')
+    parser.add_argument('--batch_size', type=int, help='Batch size for processing images', default=16)
     args = parser.parse_args()
     
     logging.info(f"CUDA available: {torch.cuda.is_available()}")
@@ -77,6 +78,6 @@ if __name__ == "__main__":
         img_path = os.path.join(args.datasetdir, split, "pictures.npz")
 
         data = load_data(img_path)
-        embeddings = generate_embeddings(data, args.test)
+        embeddings = generate_embeddings(data, args.test, args.batch_size)
         #print(embeddings)
         np.savez_compressed(os.path.join(args.datasetdir, split, "dinov3_embeddings.npz"), **embeddings)

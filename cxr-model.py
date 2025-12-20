@@ -113,7 +113,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
 
-    for split in ['test', 'valid', 'train']:
+    for split in os.listdir(args.datasetdir):
         split_path = os.path.join(args.datasetdir, f'{split}/')
         logging.info(f"Processing split: {split_path}")
         data = load_dataset(os.path.join(split_path,'pictures.npz'))
