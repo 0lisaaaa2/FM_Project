@@ -37,18 +37,21 @@ def load_images(data_root):
         # read through each folder in the root directory
         for folder in os.listdir(split_path):
             folder_path = os.path.join(split_path, folder)
-            if not os.path.isdir(split_path):
+            if not os.path.isdir(folder_path):
                 continue
 
+
+            folder_lower = folder.lower().strip()
+
             # label assignment based on folder name
-            folder_lower = folder.lower()
-            if "fractured" in folder_lower:
+            if folder_lower == "fractured":
                 label = "fractured"
-            elif "not" in folder_lower:
+            elif folder_lower in ["not fractured"]:
                 label = "normal"
             else:
                 print(f"Skipping unknown folder: {folder}")
                 continue
+            
             
             # read image files
             for fname in os.listdir(folder_path):
@@ -60,6 +63,7 @@ def load_images(data_root):
 
     df = pd.DataFrame(rows) # dataframe with "file_path" and "label"
     print("Loaded", len(df), "images total.")
+    print(df["label"].value_counts())
     return df
 
 """
