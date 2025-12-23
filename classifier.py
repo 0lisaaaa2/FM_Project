@@ -7,11 +7,14 @@ import tensorflow as tf
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 import os
 class EmbeddingClassifierTF:
-    def __init__(self, dataset_path, emb_file, normal_label, epochs=10, batch_size=32):
+    def __init__(self, dataset_path, emb_file, results_file, normal_label, epochs=10, batch_size=32):
         if not os.path.exists(dataset_path):
             raise ValueError(f"Dataset path {dataset_path} does not exist.")
         self.dataset_path = dataset_path
+        self.dataset_name = os.path.basename(dataset_path.rstrip('/\\'))
+        self.classifier_name = 'cxr' if emb_file == 'embeddings.npz' else 'dinov3'
         self.emb_file = emb_file
+        self.results_file = results_file
         self.epochs = epochs
         self.batch_size = batch_size
         self.normal_label = normal_label
@@ -31,6 +34,10 @@ class EmbeddingClassifierTF:
     def evaluate_binary_classifier(y_true, y_pred_probs):
         y_pred = (y_pred_probs >= 0.5).astype(int)
         results = {
+            "tp": int(((y_true == 1) & (y_pred == 1)).sum()),
+            "tn": int(((y_true == 0) & (y_pred == 0)).sum()),
+            "fp": int(((y_true == 0) & (y_pred == 1)).sum()),
+            "fn": int(((y_true == 1) & (y_pred == 0)).sum()),
             "accuracy": accuracy_score(y_true, y_pred),
             "precision": precision_score(y_true, y_pred, zero_division=0),
             "recall": recall_score(y_true, y_pred, zero_division=0),
@@ -82,12 +89,31 @@ class EmbeddingClassifierTF:
         model = self.build_tf_classifier(input_dim)
         model.fit(X_train, y_train, epochs=self.epochs, batch_size=self.batch_size, validation_data=(X_val, y_val), verbose=1)
 
+        results = {}
         # Evaluate on train and test
         for split_name, X, y in [("train", X_train, y_train), ("validation", X_val, y_val),("test", X_test, y_test)]:
             probs = model.predict(X, batch_size=self.batch_size).flatten()
             results = self.evaluate_binary_classifier(y, probs)
             print(f"{split_name} results: {results}")
+            self.write_file(results, split_name)
 
+
+    def write_file(self, results, split_name):
+        if not os.path.exists(self.results_file):
+            with open(self.results_file, 'w') as f:
+                f.write("dataset,classifier,split,tn,tp,fn,fp,accuracy,precision,recall,f1\n")
+            
+        with open(self.results_file, 'a') as f:
+            f.write(
+                (
+                    f"{self.dataset_name},{self.classifier_name},{split_name},"
+                    f"{results['tn']},{results['tp']},{results['fn']},{results['fp']},"
+                    f"{results['accuracy']},{results['precision']},{results['recall']},{results['f1']}\n"
+                )
+            )
+
+        
+        
         # # Save predictions for test split
         # probs = model.predict(X_test, batch_size=self.batch_size).flatten()
         # preds = (probs >= 0.5).astype(int)
@@ -112,6 +138,7 @@ if __name__ == "__main__":
         clf = EmbeddingClassifierTF(
             dataset_path=args.datasetdir,
             emb_file=em,
+            results_file= os.path.dirname(os.path.normpath(args.datasetdir)) + '/classifier_results.csv',
             normal_label=args.normal_label,
             epochs=args.epochs,
             batch_size=args.batch_size
@@ -119,10 +146,6 @@ if __name__ == "__main__":
         clf.run()
         print("-"*50)
 
-    results_df = pd.DataFrame(all_results)
-
-    print("\nResults table:")
-    print(results_df)
-    results_df.to_csv(args.output_file, index=False)
-    print(f"\nSaved results table to {args.output_file}")
-    
+        # insert into results df
+        # rows -> dataset + classifier(embedding file) 
+        # columns -> metrics, tn, tp, fn, fp, accuracy, precision, recall, f1
