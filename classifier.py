@@ -6,8 +6,11 @@ import pandas as pd
 import tensorflow as tf
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 import os
+
+NORMAL_LABELS = {'normal', 'NORMAL', 'np.False_', np.False_}
+
 class EmbeddingClassifierTF:
-    def __init__(self, dataset_path, emb_file, results_file, normal_label, epochs=10, batch_size=32):
+    def __init__(self, dataset_path, emb_file, results_file, epochs=10, batch_size=32):
         if not os.path.exists(dataset_path):
             raise ValueError(f"Dataset path {dataset_path} does not exist.")
         self.dataset_path = dataset_path
@@ -17,7 +20,6 @@ class EmbeddingClassifierTF:
         self.results_file = results_file
         self.epochs = epochs
         self.batch_size = batch_size
-        self.normal_label = normal_label
         self.cxr_embedding = True if emb_file == 'embeddings.npz' else False
         # paths
         self.train_path = os.path.join(dataset_path, "train")
@@ -56,10 +58,14 @@ class EmbeddingClassifierTF:
         X = np.stack([emb_dict[img_id] for img_id in img_ids])
         # Remove extra dimensions if present
         X = X.reshape(X.shape[0], -1)
-        unique_labels = sorted(meta['label'].unique())
+
         if not self.label_to_int:
-            self.label_to_int = {label: idx for idx, label in enumerate(unique_labels)}
-            print(f"Label to integer mapping: {self.label_to_int}")  
+            unique_labels = sorted(meta['label'].unique())
+            assert len(unique_labels) == 2, "Expected exactly two unique labels for binary classification."
+            self.label_to_int = { label: (0 if label in NORMAL_LABELS else 1) for label in unique_labels}
+            print(f"Label to integer mapping: {self.label_to_int}")
+            assert len(self.label_to_int) == 2, "No normal label found in the dataset."
+        
         meta['label_bin'] = meta['label'].map(self.label_to_int)
         y = meta.set_index("img_id").loc[img_ids]["label_bin"].values
         return X, y
@@ -69,6 +75,8 @@ class EmbeddingClassifierTF:
         layers = []
 
         layers.append(tf.keras.layers.Input(shape=(input_dim,)))
+        layers.append(tf.keras.layers.Dense(512, activation='relu'))
+        layers.append(tf.keras.layers.Dense(256, activation='relu'))
         layers.append(tf.keras.layers.Dense(128, activation='relu'))
         layers.append(tf.keras.layers.Dense(64, activation='relu'))
         layers.append(tf.keras.layers.Dense(1, activation='sigmoid'))
@@ -127,7 +135,6 @@ if __name__ == "__main__":
     parser.add_argument('--datasetdir', type=str, required=True, help="Path to a single dataset directory (e.g. datasets/animals)")
     parser.add_argument('--epochs', type=int, default=10, help="Number of training epochs")
     parser.add_argument('--batch_size', type=int, default=32, help="Batch size")
-    parser.add_argument('--normal_label', type=str, default='normal', help="Batch size")
     args = parser.parse_args()
     print(tf.config.list_physical_devices('GPU'))
     embedding_files = [ 'embeddings.npz', 'dinov3_embeddings.npz']
@@ -139,7 +146,6 @@ if __name__ == "__main__":
             dataset_path=args.datasetdir,
             emb_file=em,
             results_file= os.path.dirname(os.path.normpath(args.datasetdir)) + '/classifier_results.csv',
-            normal_label=args.normal_label,
             epochs=args.epochs,
             batch_size=args.batch_size
         )
