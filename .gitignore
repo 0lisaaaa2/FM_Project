@@ -5,3 +5,4 @@ valid/
 data/
 .venv/*
 config.py
+.vscode/launch.json
