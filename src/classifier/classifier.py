@@ -4,7 +4,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "" # just use CPU for TF classifier
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import os
 
 NORMAL_LABELS = {'normal', 'NORMAL', 'np.False_', np.False_}

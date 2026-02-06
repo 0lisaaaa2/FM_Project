@@ -4,3 +4,9 @@ torch== 2.6.0
 pillow==11.1.0
 torchmetrics==1.6.1
 torchvision==0.21.0
+matplotlib==3.10.8
+pandas==3.0.0
+transformers==5.1.0
+scikit-learn==1.8.0
+pypng==0.20220715.0
+datasets==4.5.0
