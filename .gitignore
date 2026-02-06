@@ -5,8 +5,10 @@ valid/
 val/
 data/
 .venv/*
-config.py
 venv/
 .vscode/
 secret.txt
-.venv/
+__pycache__/**
+*.err
+*.out
+config.py
