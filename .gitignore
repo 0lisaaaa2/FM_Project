@@ -2,7 +2,11 @@
 train/
 test/
 valid/
+val/
 data/
 .venv/*
 config.py
-.vscode/launch.json
+venv/
+.vscode/
+secret.txt
+.venv/
