@@ -2,6 +2,7 @@
 train/
 test/
 valid/
+val/
 data/
 .venv/*
 venv/
@@ -10,3 +11,4 @@ secret.txt
 __pycache__/**
 *.err
 *.out
+config.py

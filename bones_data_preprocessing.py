@@ -1,20 +1,27 @@
 import os
 import pandas as pd
 import numpy as np
-from PIL import Image
+
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 from sklearn.model_selection import train_test_split
+
 
 """
 Load dataset from Kaggle
+
+or run in terminal: kaggle datasets download -d bmadushanirodrigo/fracture-multi-region-x-ray-data
 """
-#import kagglehub
-#path = kagglehub.dataset_download("harmeetsingh13/foreign-body-hernia-detection-in-animals")
-#print("Path to dataset files:", path) # C:\Users\lisa-\.cache\kagglehub\datasets\harmeetsingh13\foreign-body-hernia-detection-in-animals\versions\1
+# import kagglehub
+# path = kagglehub.dataset_download("bmadushanirodrigo/fracture-multi-region-x-ray-data")
+# print("Path to dataset files:", path)
+
 
 """
 Read files and assign labels
 
-data_root: root directory containing (train|validation|test)/(foreign_body_hernia|normal)
+data_root: root directory containing (train|validation|test)/(fractured|not fractured)
 
 returns a dataframe with columns: "file_path" and "label"
 """
@@ -22,7 +29,7 @@ def load_images(data_root):
     rows = []
 
     # iterate through split folder (want to redo split later, so put everything in one df for now)
-    for split in ["train", "validation", "test"]:
+    for split in ["train", "val", "test"]:
         split_path = os.path.join(data_root, split)
         if not os.path.isdir(split_path):
             continue
@@ -30,18 +37,21 @@ def load_images(data_root):
         # read through each folder in the root directory
         for folder in os.listdir(split_path):
             folder_path = os.path.join(split_path, folder)
-            if not os.path.isdir(split_path):
+            if not os.path.isdir(folder_path):
                 continue
 
+
+            folder_lower = folder.lower().strip()
+
             # label assignment based on folder name
-            folder_lower = folder.lower()
-            if "foreign" in folder_lower:
-                label = "foreignbody"
-            elif "normal" in folder_lower:
+            if folder_lower == "fractured":
+                label = "fractured"
+            elif folder_lower in ["not fractured"]:
                 label = "normal"
             else:
                 print(f"Skipping unknown folder: {folder}")
                 continue
+            
             
             # read image files
             for fname in os.listdir(folder_path):
@@ -53,6 +63,7 @@ def load_images(data_root):
 
     df = pd.DataFrame(rows) # dataframe with "file_path" and "label"
     print("Loaded", len(df), "images total.")
+    print(df["label"].value_counts())
     return df
 
 """
@@ -94,7 +105,7 @@ returns dataframe with new image ids
 """
 def add_image_ids(df, split_name):
     df = df.copy()
-    df["img_id"] = [f"animal_{split_name}_img_{i+1}" for i, row in df.iterrows()]
+    df["img_id"] = [f"bones_{split_name}_img_{i+1}" for i, row in df.iterrows()]
     return df
 
 """
@@ -134,19 +145,21 @@ def save_split(df, output_dir, split_name):
         img_array = load_and_convert_image(row.file_path) # convert into greyscale
         img_dict[row.img_id] = img_array # img_id : image_array
     
-    print(split_name, img_dict)
+    #print(split_name, img_dict)
 
     # save pictures.npz
     pictures_path = os.path.join(split_dir, "pictures.npz")
     np.savez(pictures_path, **img_dict)
     print(f"Saved pictures: {pictures_path}")
 
+
+
 """
 Main
 """
 def main():
-    data_root = r"C:\Users\lisa-\.cache\kagglehub\datasets\harmeetsingh13\foreign-body-hernia-detection-in-animals\versions\1\DataSet Hernia Detection"
-    output_dir = r"D:\lisa-\Universität_2\Master\2. Semester\FM\preprocessed_datasets\animals"
+    data_root = r"D:\lisa-\Universität_2\Master\2. Semester\FM_Project\Bone_Fracture_Binary_Classification\Bone_Fracture_Binary_Classification"
+    output_dir = r"D:\lisa-\Universität_2\Master\2. Semester\FM\preprocessed_datasets\bones"
 
     df = load_images(data_root)
 
@@ -161,8 +174,8 @@ def main():
     save_split(test_df, output_dir, "test")
 
     print("\nAll datasets saved successfully!")
+    return None
 
-#Loaded 514 images total.
-#Train size: 358, Validation size: 78, Test size: 78
+
 if __name__ == "__main__":
-    main()
+     main()
