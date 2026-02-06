@@ -9,3 +9,4 @@ config.py
 venv/
 .vscode/
 secret.txt
+.venv/
