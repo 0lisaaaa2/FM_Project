@@ -5,12 +5,6 @@ valid/
 data/
 .venv/*
 venv/
-config.py
-.vscode/launch.json
-.venv/**
-config.py
-.venv/**
-config.py
 .vscode/
 secret.txt
 __pycache__/**
